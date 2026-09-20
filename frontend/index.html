@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Network Monitoring Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header>
+            <h1>🌐 Network Monitoring Dashboard</h1>
+            <p>Real-time network connectivity and performance monitoring</p>
+        </header>
+
+
+        <!-- Dashboard Cards -->
+        <section class="cards">
+
+            <div class="card">
+                <h3>Total Hosts</h3>
+                <p id="total-hosts">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Hosts UP</h3>
+                <p id="hosts-up">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Hosts DOWN</h3>
+                <p id="hosts-down">-</p>
+            </div>
+
+        </section>
+
+
+        <!-- Network Status Table -->
+        <section class="status-section">
+
+            <h2>Network Status</h2>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Host</th>
+                        <th>Status</th>
+                        <th>Latency</th>
+                        <th>Packet Loss</th>
+                    </tr>
+                </thead>
+
+                <tbody id="network-table">
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- Charts -->
+        <section class="charts">
+
+            <div class="chart-card">
+
+                <h2>📊 Latency Trend</h2>
+
+                <canvas id="latency-chart"></canvas>
+
+            </div>
+
+
+            <div class="chart-card">
+
+                <h2>📉 Packet Loss Trend</h2>
+
+                <canvas id="packet-loss-chart"></canvas>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
