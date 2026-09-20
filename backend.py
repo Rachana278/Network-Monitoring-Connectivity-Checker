@@ -1,16 +1,58 @@
 from flask import Flask, jsonify, send_from_directory
-import subprocess
-import platform
-import re
+import socket
+import time
 
 app = Flask(__name__)
 
 hosts = [
     "google.com",
-    "8.8.8.8",
-    "1.1.1.1",
+    "cloudflare.com",
+    "github.com",
     "this-host-does-not-exist-12345.com"
 ]
+
+
+def check_host(host):
+    attempts = 4
+    successful = 0
+    latencies = []
+
+    for _ in range(attempts):
+        try:
+            start = time.perf_counter()
+
+            # Try connecting to HTTPS port
+            connection = socket.create_connection(
+                (host, 443),
+                timeout=3
+            )
+
+            connection.close()
+
+            latency = (time.perf_counter() - start) * 1000
+            latencies.append(latency)
+            successful += 1
+
+        except Exception:
+            pass
+
+    packet_loss = ((attempts - successful) / attempts) * 100
+
+    if successful > 0:
+        average_latency = round(
+            sum(latencies) / len(latencies), 2
+        )
+        status = "UP"
+    else:
+        average_latency = None
+        status = "DOWN"
+
+    return {
+        "host": host,
+        "status": status,
+        "latency": average_latency,
+        "packet_loss": packet_loss
+    }
 
 
 @app.route("/")
@@ -25,74 +67,10 @@ def frontend_files(filename):
 
 @app.route("/api/status")
 def network_status():
-
     results = []
 
     for host in hosts:
-
-        # Windows uses -n
-        # Linux/macOS uses -c
-        if platform.system().lower() == "windows":
-            command = ["ping", "-n", "4", host]
-        else:
-            command = ["ping", "-c", "4", host]
-
-        try:
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=15
-            )
-
-            output = result.stdout
-
-            if result.returncode == 0:
-
-                # Extract packet loss
-                loss_match = re.search(
-                    r"(\d+(?:\.\d+)?)%\s*(?:loss|packet loss)",
-                    output,
-                    re.IGNORECASE
-                )
-
-                # Extract average latency
-                latency_match = re.search(
-                    r"(?:Average = |avg/.*?= )(\d+(?:\.\d+)?)\s*ms",
-                    output,
-                    re.IGNORECASE
-                )
-
-                if latency_match:
-                    average_latency = float(latency_match.group(1))
-                else:
-                    average_latency = None
-
-                if loss_match:
-                    packet_loss = loss_match.group(1)
-                else:
-                    packet_loss = "0"
-
-                status = "UP"
-
-            else:
-
-                status = "DOWN"
-                average_latency = None
-                packet_loss = None
-
-        except Exception:
-
-            status = "DOWN"
-            average_latency = None
-            packet_loss = None
-
-        results.append({
-            "host": host,
-            "status": status,
-            "latency": average_latency,
-            "packet_loss": packet_loss
-        })
+        results.append(check_host(host))
 
     return jsonify(results)
 
